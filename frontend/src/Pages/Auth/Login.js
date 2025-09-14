@@ -1,4 +1,3 @@
-// LoginPage.js
 import { useCallback, useEffect, useState } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import Particles from "react-tsparticles";
@@ -12,9 +11,9 @@ import { loginAPI } from "../../utils/ApiRequest";
 
 const Login = () => {
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
 
+  // Redirect if already logged in
   useEffect(() => {
     if (localStorage.getItem("user")) {
       navigate("/");
@@ -29,106 +28,79 @@ const Login = () => {
   const toastOptions = {
     position: "bottom-right",
     autoClose: 2000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: false,
-    draggable: true,
-    progress: undefined,
     theme: "dark",
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setValues({ ...values, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const { email, password } = values;
 
+    if (!email || !password) {
+      toast.error("Please enter email and password", toastOptions);
+      return;
+    }
+
     setLoading(true);
+    try {
+      const { data } = await axios.post(loginAPI, { email, password });
 
-    const { data } = await axios.post(loginAPI, {
-      email,
-      password,
-    });
+      if (data.success) {
+        // store user in localStorage
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-    if (data.success === true) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
-      toast.success(data.message, toastOptions);
-      setLoading(false);
-    } else {
-      toast.error(data.message, toastOptions);
+        // ✅ safe success message (fallback just in case)
+        toast.success(
+          data.message || data.msg || "Login successful!",
+          toastOptions
+        );
+
+        // navigate to home/dashboard
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        // ✅ safe error message
+        toast.error(data.message || data.msg || "Login failed!", toastOptions);
+      }
+    } catch (err) {
+      // ✅ safe error message handling
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.msg ||
+        "Login failed. Please try again.";
+      toast.error(message, toastOptions);
+    } finally {
       setLoading(false);
     }
   };
 
+  // Particles
   const particlesInit = useCallback(async (engine) => {
-    // console.log(engine);
     await loadFull(engine);
   }, []);
-
-  const particlesLoaded = useCallback(async (container) => {
-    // await console.log(container);
-  }, []);
+  const particlesLoaded = useCallback(async () => {}, []);
 
   return (
     <div style={{ position: "relative", overflow: "hidden" }}>
+      {/* Background Particles */}
       <Particles
         id="tsparticles"
         init={particlesInit}
         loaded={particlesLoaded}
         options={{
-          background: {
-            color: {
-              value: "#000",
-            },
-          },
+          background: { color: { value: "#000" } },
           fpsLimit: 60,
           particles: {
-            number: {
-              value: 200,
-              density: {
-                enable: true,
-                value_area: 800,
-              },
-            },
-            color: {
-              value: "#ffcc00",
-            },
-            shape: {
-              type: "circle",
-            },
-            opacity: {
-              value: 0.5,
-              random: true,
-            },
-            size: {
-              value: 3,
-              random: { enable: true, minimumValue: 1 },
-            },
-            links: {
-              enable: false,
-            },
-            move: {
-              enable: true,
-              speed: 2,
-            },
-            life: {
-              duration: {
-                sync: false,
-                value: 3,
-              },
-              count: 0,
-              delay: {
-                random: {
-                  enable: true,
-                  minimumValue: 0.5,
-                },
-                value: 1,
-              },
-            },
+            number: { value: 200, density: { enable: true, value_area: 800 } },
+            color: { value: "#ffcc00" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5, random: true },
+            size: { value: 3, random: { enable: true, minimumValue: 1 } },
+            links: { enable: false },
+            move: { enable: true, speed: 2 },
           },
           detectRetina: true,
         }}
@@ -141,32 +113,28 @@ const Login = () => {
           bottom: 0,
         }}
       />
-      <Container
-        className="mt-5"
-        style={{ position: "relative", zIndex: "2 !important" }}
-      >
+
+      {/* Login Form */}
+      <Container className="mt-5" style={{ position: "relative", zIndex: 2 }}>
         <Row>
           <Col md={{ span: 6, offset: 3 }}>
             <h1 className="text-center mt-5">
-              <AccountBalanceWalletIcon
-                sx={{ fontSize: 40, color: "white" }}
-                className="text-center"
-              />
+              <AccountBalanceWalletIcon sx={{ fontSize: 40, color: "white" }} />
             </h1>
-            <h2 className="text-white text-center ">Login</h2>
-            <Form>
-              <Form.Group controlId="formBasicEmail" className="mt-3">
+            <h2 className="text-white text-center">Login</h2>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mt-3">
                 <Form.Label className="text-white">Email address</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="Enter email"
                   name="email"
+                  placeholder="Enter email"
                   onChange={handleChange}
                   value={values.email}
                 />
               </Form.Group>
 
-              <Form.Group controlId="formBasicPassword" className="mt-3">
+              <Form.Group className="mt-3">
                 <Form.Label className="text-white">Password</Form.Label>
                 <Form.Control
                   type="password"
@@ -176,31 +144,18 @@ const Login = () => {
                   value={values.password}
                 />
               </Form.Group>
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                }}
-                className="mt-4"
-              >
-                <Link to="/forgotPassword" className="text-white lnk">
-                  Forgot Password?
-                </Link>
 
+              <div className="mt-4 d-flex flex-column align-items-center">
                 <Button
                   type="submit"
-                  className=" text-center mt-3 btnStyle"
-                  onClick={!loading ? handleSubmit : null}
+                  className="mt-3 btnStyle"
                   disabled={loading}
                 >
-                  {loading ? "Signin…" : "Login"}
+                  {loading ? "Signing in…" : "Login"}
                 </Button>
 
                 <p className="mt-3" style={{ color: "#9d9494" }}>
-                  Don't Have an Account?{" "}
+                  Don’t have an account?{" "}
                   <Link to="/register" className="text-white lnk">
                     Register
                   </Link>

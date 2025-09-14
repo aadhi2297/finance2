@@ -7,19 +7,20 @@ import helmet from "helmet";
 import morgan from "morgan";
 import transactionRoutes from "./Routers/Transactions.js";
 import userRoutes from "./Routers/userRouter.js";
-import path from "path";
 
 dotenv.config({ path: "./config/config.env" });
 const app = express();
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 
+// Connect to MongoDB
 connectDB();
 
+// Allowed origins (for production hosting)
 const allowedOrigins = [
   "https://main.d1sj7cd70hlter.amplifyapp.com",
   "https://expense-tracker-app-three-beryl.vercel.app",
-  // add more origins as needed
+  // add more origins if needed
 ];
 
 // Middleware
@@ -37,14 +38,16 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Router
-app.use("/api/v1", transactionRoutes);
-app.use("/api/auth", userRoutes);
+// Routes (clean structure)
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/transactions", transactionRoutes);
 
+// Default route
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello World! API is running 🚀");
 });
 
+// Start server
 app.listen(port, () => {
-  console.log(`Server is listening on http://localhost:${port}`);
+  console.log(`✅ Server is listening on http://localhost:${port}`);
 });

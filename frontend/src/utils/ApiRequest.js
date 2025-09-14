@@ -1,9 +1,17 @@
-const host = "https://expense-tracker-app-knl1.onrender.com";
-// const host = "http://localhost:5000";
-export const setAvatarAPI = `${host}/api/auth/setAvatar`;
-export const registerAPI = `${host}/api/auth/register`;
-export const loginAPI = `${host}/api/auth/login`;
-export const addTransaction = `${host}/api/v1/addTransaction`;
-export const getTransactions = `${host}/api/v1/getTransaction`;
-export const editTransactions = `${host}/api/v1/updateTransaction`;
-export const deleteTransactions = `${host}/api/v1/deleteTransaction`;
+// src/utils/ApiRequest.js
+export const host = "http://127.0.0.1:5000"; // backend
+
+// =================== AUTH ===================
+export const registerAPI = `${host}/api/v1/users/register`;
+export const loginAPI = `${host}/api/v1/users/login`;
+export const setAvatarAPI = `${host}/api/v1/users/setAvatar`;
+
+// =================== TRANSACTIONS ===================
+export const addTransactionAPI = `${host}/api/v1/transactions/addTransaction`;
+export const getTransactionsAPI = `${host}/api/v1/transactions/getTransactions`;
+
+// ✅ make these functions that append the ID
+export const updateTransactionAPI = (id) =>
+  `${host}/api/v1/transactions/updateTransaction/${id}`;
+export const deleteTransactionAPI = (id) =>
+  `${host}/api/v1/transactions/deleteTransaction/${id}`;

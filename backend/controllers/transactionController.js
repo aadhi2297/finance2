@@ -85,14 +85,14 @@ export const getAllTransactionController = async (req, res) => {
       user: userId,
     };
 
-    if (type !== 'all') {
+    if (type !== "all") {
       query.transactionType = type;
     }
 
     // Add date conditions based on 'frequency' and 'custom' range
-    if (frequency !== 'custom') {
+    if (frequency !== "custom") {
       query.date = {
-        $gt: moment().subtract(Number(frequency), "days").toDate()
+        $gt: moment().subtract(Number(frequency), "days").toDate(),
       };
     } else if (startDate && endDate) {
       query.date = {
@@ -118,7 +118,6 @@ export const getAllTransactionController = async (req, res) => {
     });
   }
 };
-
 
 export const deleteTransactionController = async (req, res) => {
   try {
@@ -146,13 +145,13 @@ export const deleteTransactionController = async (req, res) => {
       });
     }
 
-    const transactionArr = user.transactions.filter(
-      (transaction) => transaction._id === transactionId
+    // after deleting transactionElement
+    user.transactions = user.transactions.filter(
+      (t) => t._id.toString() !== transactionId.toString()
     );
+    await user.save();
 
-    user.transactions = transactionArr;
-
-    user.save();
+    // user.save();
 
     // await transactionElement.remove();
 
